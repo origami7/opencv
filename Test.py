@@ -85,6 +85,10 @@ for i, file in enumerate(csv_files):
     elif i == 3:
         sensor4_points = points
 
+#统一高度2与其他一致
+z_offset = np.mean(sensor1_points[:, 2]) - np.mean(sensor2_points[:, 2])
+sensor2_points[:, 2] += z_offset
+
 # 对四个传感器的点云数据进行统计滤波
 sensor1_points_filtered = statistical_filtering(sensor1_points)
 sensor2_points_filtered = statistical_filtering(sensor2_points)
