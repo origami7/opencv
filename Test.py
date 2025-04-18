@@ -52,6 +52,13 @@ def statistical_filtering(points, nb_neighbors=20, std_ratio=2.0):
     filtered_points = np.asarray(cl.points)
     return filtered_points
 
+# 筛选接近特定 z 高度的点云数据
+def filter_points_by_z(points, z_target, tolerance):
+    # 计算每个点的 z 坐标与目标 z 高度的差值
+    z_diff = np.abs(points[:, 2] - z_target)
+    # 筛选出差值小于容差的点
+    filtered_points = points[z_diff <= tolerance]
+    return filtered_points
 
 # 可视化点云数据
 def visualize_point_cloud(points_list, colors_list, title="Point Cloud"):
@@ -95,7 +102,20 @@ sensor2_points_filtered = statistical_filtering(sensor2_points)
 sensor3_points_filtered = statistical_filtering(sensor3_points)
 sensor4_points_filtered = statistical_filtering(sensor4_points)
 
-# 可视化四个传感器的点云数据
+# 可视化四个传感器的所有点云数据
 colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
 points_list = [sensor1_points_filtered, sensor2_points_filtered, sensor3_points_filtered, sensor4_points_filtered]
 visualize_point_cloud(points_list, colors, title="Combined Filtered Points")
+
+z_target = 5  # 根据需要调整z高度
+tolerance = 0.05  # 容差范围，用于筛选接近 z_target 的点
+
+# 筛选接近目标 z 高度的点云数据
+sensor1_points_filtered_at_z = filter_points_by_z(sensor1_points_filtered, z_target, tolerance)
+sensor2_points_filtered_at_z = filter_points_by_z(sensor2_points_filtered, z_target, tolerance)
+sensor3_points_filtered_at_z = filter_points_by_z(sensor3_points_filtered, z_target, tolerance)
+sensor4_points_filtered_at_z = filter_points_by_z(sensor4_points_filtered, z_target, tolerance)
+
+# 可视化筛选z后的点云数据
+points_list_at_z = [sensor1_points_filtered_at_z, sensor2_points_filtered_at_z, sensor3_points_filtered_at_z, sensor4_points_filtered_at_z]
+visualize_point_cloud(points_list_at_z, colors, title="Points at z = {:.2f}".format(z_target))
