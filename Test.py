@@ -33,9 +33,7 @@ def read_csv_and_extract_points(file_path):
                 points.append([x, y, z])
 
     # 将点云数据转换为 NumPy 数组
-    points = np.array(points)
-
-    return points
+    return np.array(points)
 
 
 # 将点云数据转换为 Open3D 的点云对象
@@ -49,90 +47,86 @@ def points_to_pointcloud(points):
 def statistical_filtering(points, nb_neighbors=20, std_ratio=2.0):
     point_cloud = points_to_pointcloud(points)
     cl, ind = point_cloud.remove_statistical_outlier(nb_neighbors=nb_neighbors, std_ratio=std_ratio)
-    filtered_points = np.asarray(cl.points)
-    return filtered_points
+    return np.asarray(cl.points)
+
 
 # 筛选接近特定 z 高度的点云数据
 def filter_points_by_z(points, z_target, tolerance):
-    # 计算每个点的 z 坐标与目标 z 高度的差值
     z_diff = np.abs(points[:, 2] - z_target)
-    # 筛选出差值小于容差的点
-    filtered_points = points[z_diff <= tolerance]
-    return filtered_points
+    return points[z_diff <= tolerance]
+
 
 # 可视化点云数据
 def visualize_point_cloud(points_list, colors_list, title="Point Cloud"):
-    point_clouds = []
-    for points, color in zip(points_list, colors_list):
-        point_cloud = points_to_pointcloud(points)
+    point_clouds = [points_to_pointcloud(points) for points in points_list]
+    for point_cloud, color in zip(point_clouds, colors_list):
         point_cloud.paint_uniform_color(color)
-        point_clouds.append(point_cloud)
-
     o3d.visualization.draw_geometries(point_clouds, window_name=title)
+
+# 分离小于和大于指定 x 值的数据
+def split_points_by_x(points, x_value):
+    less_than_x = points[points[:, 0] < x_value]
+    greater_than_x = points[points[:, 0] > x_value]
+    return less_than_x, greater_than_x
 
 # 将点云数据映射到 xy 平面上并使用 matplotlib 可视化，每组数据单独显示
 def visualize_points_on_xy_plane(points_list, colors_list, title_prefix="XY Plane Projection"):
     for i, (points, color) in enumerate(zip(points_list, colors_list)):
-        plt.figure(figsize=(8, 6))
-        # 提取 x 和 y 坐标
-        x = points[:, 0]
-        y = points[:, 1]
-        # 绘制散点图
-        plt.scatter(x, y, c=color, label=f"Sensor {i+1}")
-        plt.title(f"{title_prefix} - Sensor {i+1}")
-        plt.xlabel("X")
-        plt.ylabel("Y")
-        plt.legend()
-        plt.grid(True)
-        plt.axis("equal")  # 保持比例
+        x, y = points[:, 0], points[:, 1]
+        max_y_index = np.argmax(y)
+        max_y_x_value = x[max_y_index]
+
+        # 分离小于和大于 max_y_x_value 的数据
+        less_than_x, greater_than_x = split_points_by_x(points, max_y_x_value)
+
+        # 创建一个包含两个子图的图窗口
+        fig, axs = plt.subplots(1, 2, figsize=(16, 6))
+
+        # 绘制小于 max_y_x_value 的数据
+        if len(less_than_x) > 0:
+            axs[0].scatter(less_than_x[:, 0], less_than_x[:, 1], c=color, label=f"Sensor {i + 1} (x < {max_y_x_value:.2f})")
+        axs[0].set_title("left_points")
+        axs[0].set_xlabel("X")
+        axs[0].set_ylabel("Y")
+        axs[0].legend()
+        axs[0].grid(True)
+        axs[0].set_aspect("equal")
+
+        # 绘制大于 max_y_x_value 的数据
+        if len(greater_than_x) > 0:
+            axs[1].scatter(greater_than_x[:, 0], greater_than_x[:, 1], c=color, label=f"Sensor {i + 1} (x > {max_y_x_value:.2f})")
+        axs[1].set_title("right_points")
+        axs[1].set_xlabel("X")
+        axs[1].set_ylabel("Y")
+        axs[1].legend()
+        axs[1].grid(True)
+        axs[1].set_aspect("equal")
+
+        plt.tight_layout()
         plt.show()
 
-# 定义四个数组，分别存储每个传感器的点云数据
-sensor1_points = None
-sensor2_points = None
-sensor3_points = None
-sensor4_points = None
 
 # 读取四个 CSV 文件并提取点云数据
-csv_files = ["data/物料验证2/量块/左上.csv", "data/物料验证2/量块/右上.csv", "data/物料验证2/量块/右下.csv",
-             "data/物料验证2/量块/左下.csv"]
+csv_files = ["data/物料验证2/量块/左上.csv", "data/物料验证2/量块/右上.csv", "data/物料验证2/量块/右下.csv", "data/物料验证2/量块/左下.csv"]
+sensor_points = [read_csv_and_extract_points(file) for file in csv_files]
 
-for i, file in enumerate(csv_files):
-    points = read_csv_and_extract_points(file)
-    if i == 0:
-        sensor1_points = points
-    elif i == 1:
-        sensor2_points = points
-    elif i == 2:
-        sensor3_points = points
-    elif i == 3:
-        sensor4_points = points
-
-#统一高度2与其他一致
-z_offset = np.mean(sensor1_points[:, 2]) - np.mean(sensor2_points[:, 2])
-sensor2_points[:, 2] += z_offset
+# 统一高度2与其他一致
+z_offset = np.mean(sensor_points[0][:, 2]) - np.mean(sensor_points[1][:, 2])
+sensor_points[1][:, 2] += z_offset
 
 # 对四个传感器的点云数据进行统计滤波
-sensor1_points_filtered = statistical_filtering(sensor1_points)
-sensor2_points_filtered = statistical_filtering(sensor2_points)
-sensor3_points_filtered = statistical_filtering(sensor3_points)
-sensor4_points_filtered = statistical_filtering(sensor4_points)
+filtered_points = [statistical_filtering(points) for points in sensor_points]
 
 # 可视化四个传感器的所有点云数据
 colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
-points_list = [sensor1_points_filtered, sensor2_points_filtered, sensor3_points_filtered, sensor4_points_filtered]
-# visualize_point_cloud(points_list, colors, title="Combined Filtered Points")
-
-z_target = 3  # 根据需要调整z高度
-tolerance = 0.05  # 容差范围，用于筛选接近 z_target 的点
+visualize_point_cloud(filtered_points, colors, title="Combined Filtered Points")
 
 # 筛选接近目标 z 高度的点云数据
-sensor1_points_filtered_at_z = filter_points_by_z(sensor1_points_filtered, z_target, tolerance)
-sensor2_points_filtered_at_z = filter_points_by_z(sensor2_points_filtered, z_target, tolerance)
-sensor3_points_filtered_at_z = filter_points_by_z(sensor3_points_filtered, z_target, tolerance)
-sensor4_points_filtered_at_z = filter_points_by_z(sensor4_points_filtered, z_target, tolerance)
+z_target = 3  # 根据需要调整z高度
+tolerance = 0.02  # 容差范围，用于筛选接近 z_target 的点
+filtered_points_at_z = [filter_points_by_z(points, z_target, tolerance) for points in filtered_points]
+visualize_point_cloud(filtered_points_at_z, colors, title="Z Filtered Points")
 
 # 可视化筛选 z 后的点云数据在 xy 平面上的投影，每组数据分开显示
-points_list_at_z = [sensor1_points_filtered_at_z, sensor2_points_filtered_at_z, sensor3_points_filtered_at_z, sensor4_points_filtered_at_z]
 colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
-visualize_points_on_xy_plane(points_list_at_z, colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
+visualize_points_on_xy_plane(filtered_points_at_z, colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
