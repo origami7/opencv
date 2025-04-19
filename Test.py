@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import open3d as o3d
-
+import matplotlib.pyplot as plt
 
 # 定义一个函数，用于读取单个 CSV 文件并提取点云数据
 def read_csv_and_extract_points(file_path):
@@ -70,6 +70,22 @@ def visualize_point_cloud(points_list, colors_list, title="Point Cloud"):
 
     o3d.visualization.draw_geometries(point_clouds, window_name=title)
 
+# 将点云数据映射到 xy 平面上并使用 matplotlib 可视化
+def visualize_points_on_xy_plane(points_list, colors_list, title="XY Plane Projection"):
+    plt.figure(figsize=(10, 8))
+    for points, color in zip(points_list, colors_list):
+        # 提取 x 和 y 坐标
+        x = points[:, 0]
+        y = points[:, 1]
+        # 绘制散点图
+        plt.scatter(x, y, c=color, label=f"Sensor {color}")
+    plt.title(title)
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.legend()
+    plt.grid(True)
+    plt.axis("equal")  # 保持比例
+    plt.show()
 
 # 定义四个数组，分别存储每个传感器的点云数据
 sensor1_points = None
@@ -107,7 +123,7 @@ colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
 points_list = [sensor1_points_filtered, sensor2_points_filtered, sensor3_points_filtered, sensor4_points_filtered]
 visualize_point_cloud(points_list, colors, title="Combined Filtered Points")
 
-z_target = 5  # 根据需要调整z高度
+z_target = 3  # 根据需要调整z高度
 tolerance = 0.05  # 容差范围，用于筛选接近 z_target 的点
 
 # 筛选接近目标 z 高度的点云数据
@@ -116,6 +132,7 @@ sensor2_points_filtered_at_z = filter_points_by_z(sensor2_points_filtered, z_tar
 sensor3_points_filtered_at_z = filter_points_by_z(sensor3_points_filtered, z_target, tolerance)
 sensor4_points_filtered_at_z = filter_points_by_z(sensor4_points_filtered, z_target, tolerance)
 
-# 可视化筛选z后的点云数据
+# 在xy平面可视化筛选z后的点云数据
 points_list_at_z = [sensor1_points_filtered_at_z, sensor2_points_filtered_at_z, sensor3_points_filtered_at_z, sensor4_points_filtered_at_z]
-visualize_point_cloud(points_list_at_z, colors, title="Points at z = {:.2f}".format(z_target))
+colors = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
+visualize_points_on_xy_plane(points_list_at_z, colors, title="Points at z = {:.2f} on XY Plane".format(z_target))
