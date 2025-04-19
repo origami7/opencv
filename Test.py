@@ -70,22 +70,22 @@ def visualize_point_cloud(points_list, colors_list, title="Point Cloud"):
 
     o3d.visualization.draw_geometries(point_clouds, window_name=title)
 
-# 将点云数据映射到 xy 平面上并使用 matplotlib 可视化
-def visualize_points_on_xy_plane(points_list, colors_list, title="XY Plane Projection"):
-    plt.figure(figsize=(10, 8))
-    for points, color in zip(points_list, colors_list):
+# 将点云数据映射到 xy 平面上并使用 matplotlib 可视化，每组数据单独显示
+def visualize_points_on_xy_plane(points_list, colors_list, title_prefix="XY Plane Projection"):
+    for i, (points, color) in enumerate(zip(points_list, colors_list)):
+        plt.figure(figsize=(8, 6))
         # 提取 x 和 y 坐标
         x = points[:, 0]
         y = points[:, 1]
         # 绘制散点图
-        plt.scatter(x, y, c=color, label=f"Sensor {color}")
-    plt.title(title)
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.legend()
-    plt.grid(True)
-    plt.axis("equal")  # 保持比例
-    plt.show()
+        plt.scatter(x, y, c=color, label=f"Sensor {i+1}")
+        plt.title(f"{title_prefix} - Sensor {i+1}")
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.legend()
+        plt.grid(True)
+        plt.axis("equal")  # 保持比例
+        plt.show()
 
 # 定义四个数组，分别存储每个传感器的点云数据
 sensor1_points = None
@@ -121,7 +121,7 @@ sensor4_points_filtered = statistical_filtering(sensor4_points)
 # 可视化四个传感器的所有点云数据
 colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
 points_list = [sensor1_points_filtered, sensor2_points_filtered, sensor3_points_filtered, sensor4_points_filtered]
-visualize_point_cloud(points_list, colors, title="Combined Filtered Points")
+# visualize_point_cloud(points_list, colors, title="Combined Filtered Points")
 
 z_target = 3  # 根据需要调整z高度
 tolerance = 0.05  # 容差范围，用于筛选接近 z_target 的点
@@ -132,7 +132,7 @@ sensor2_points_filtered_at_z = filter_points_by_z(sensor2_points_filtered, z_tar
 sensor3_points_filtered_at_z = filter_points_by_z(sensor3_points_filtered, z_target, tolerance)
 sensor4_points_filtered_at_z = filter_points_by_z(sensor4_points_filtered, z_target, tolerance)
 
-# 在xy平面可视化筛选z后的点云数据
+# 可视化筛选 z 后的点云数据在 xy 平面上的投影，每组数据分开显示
 points_list_at_z = [sensor1_points_filtered_at_z, sensor2_points_filtered_at_z, sensor3_points_filtered_at_z, sensor4_points_filtered_at_z]
-colors = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
-visualize_points_on_xy_plane(points_list_at_z, colors, title="Points at z = {:.2f} on XY Plane".format(z_target))
+colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
+visualize_points_on_xy_plane(points_list_at_z, colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
