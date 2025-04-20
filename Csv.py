@@ -119,16 +119,16 @@ filtered_points_4 = statistical_filtering(sensor_points_4)
 
 # 可视化四个传感器的所有点云数据
 colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
-visualize_point_cloud([filtered_points_1, filtered_points_2, filtered_points_3, filtered_points_4], colors, title="Combined Filtered Points")
+#visualize_point_cloud([filtered_points_1, filtered_points_2, filtered_points_3, filtered_points_4], colors, title="Combined Filtered Points")
 
 # 筛选接近目标 z 高度的点云数据
 z_target = 3  # 根据需要调整z高度
-tolerance = 0.01  # 容差范围，用于筛选接近 z_target 的点
+tolerance = 0.03  # 容差范围，用于筛选接近 z_target 的点
 filtered_points_at_z_1 = filter_points_by_z(filtered_points_1, z_target, tolerance)
 filtered_points_at_z_2 = filter_points_by_z(filtered_points_2, z_target, tolerance)
 filtered_points_at_z_3 = filter_points_by_z(filtered_points_3, z_target, tolerance)
 filtered_points_at_z_4 = filter_points_by_z(filtered_points_4, z_target, tolerance)
-visualize_point_cloud([filtered_points_at_z_1, filtered_points_at_z_2, filtered_points_at_z_3, filtered_points_at_z_4], colors, title="Z Filtered Points")
+#visualize_point_cloud([filtered_points_at_z_1, filtered_points_at_z_2, filtered_points_at_z_3, filtered_points_at_z_4], colors, title="Z Filtered Points")
 
 # 可视化筛选 z 后的点云数据在 xy 平面上的投影，每组数据分开显示
 filtered_points_at_z_1_2d = filtered_points_at_z_1[:, :2]
@@ -136,4 +136,4 @@ filtered_points_at_z_2_2d = filtered_points_at_z_2[:, :2]
 filtered_points_at_z_3_2d = filtered_points_at_z_3[:, :2]
 filtered_points_at_z_4_2d = filtered_points_at_z_4[:, :2]
 colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
-visualize_points_on_xy_plane([filtered_points_at_z_1_2d, filtered_points_at_z_2_2d, filtered_points_at_z_3_2d, filtered_points_at_z_4_2d], colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
+#visualize_points_on_xy_plane([filtered_points_at_z_1_2d, filtered_points_at_z_2_2d, filtered_points_at_z_3_2d, filtered_points_at_z_4_2d], colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
