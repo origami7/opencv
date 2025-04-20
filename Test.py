@@ -131,7 +131,9 @@ filtered_points_at_z_4 = filter_points_by_z(filtered_points_4, z_target, toleran
 visualize_point_cloud([filtered_points_at_z_1, filtered_points_at_z_2, filtered_points_at_z_3, filtered_points_at_z_4], colors, title="Z Filtered Points")
 
 # 可视化筛选 z 后的点云数据在 xy 平面上的投影，每组数据分开显示
+filtered_points_at_z_1_2d = filtered_points_at_z_1[:, :2]
+filtered_points_at_z_2_2d = filtered_points_at_z_2[:, :2]
+filtered_points_at_z_3_2d = filtered_points_at_z_3[:, :2]
+filtered_points_at_z_4_2d = filtered_points_at_z_4[:, :2]
 colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
-visualize_points_on_xy_plane([filtered_points_at_z_1, filtered_points_at_z_2, filtered_points_at_z_3, filtered_points_at_z_4], colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
-
-
+visualize_points_on_xy_plane([filtered_points_at_z_1_2d, filtered_points_at_z_2_2d, filtered_points_at_z_3_2d, filtered_points_at_z_4_2d], colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
