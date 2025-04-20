@@ -52,7 +52,7 @@ def extract_multiple_lines(points, num_lines=3, residual_threshold=1.0, max_tria
 
 
 # 获取数据
-points_1 = Test.filtered_points_at_z_1_2d
+points_1 = Csv.filtered_points_at_z_1_2d
 x, y = points_1[:, 0], points_1[:, 1]
 max_y_index = np.argmax(y)
 max_y_x_value = x[max_y_index]
