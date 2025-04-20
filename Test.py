@@ -64,27 +64,27 @@ def visualize_point_cloud(points_list, colors_list, title="Point Cloud"):
     o3d.visualization.draw_geometries(point_clouds, window_name=title)
 
 # 分离小于和大于指定 x 值的数据
-def split_points_by_x(points, x_value):
-    less_than_x = points[points[:, 0] < x_value]
-    greater_than_x = points[points[:, 0] > x_value]
+def split_points_by_x(points):
+    x, y = points[:, 0], points[:, 1]
+    max_y_index = np.argmax(y)
+    max_y_x_value = x[max_y_index]
+    less_than_x = points[points[:, 0] < max_y_x_value]
+    greater_than_x = points[points[:, 0] > max_y_x_value]
     return less_than_x, greater_than_x
 
 # 将点云数据映射到 xy 平面上并使用 matplotlib 可视化，每组数据单独显示
 def visualize_points_on_xy_plane(points_list, colors_list, title_prefix="XY Plane Projection"):
     for i, (points, color) in enumerate(zip(points_list, colors_list)):
-        x, y = points[:, 0], points[:, 1]
-        max_y_index = np.argmax(y)
-        max_y_x_value = x[max_y_index]
 
         # 分离小于和大于 max_y_x_value 的数据
-        less_than_x, greater_than_x = split_points_by_x(points, max_y_x_value)
+        less_than_x, greater_than_x = split_points_by_x(points)
 
         # 创建一个包含两个子图的图窗口
         fig, axs = plt.subplots(1, 2, figsize=(16, 6))
 
         # 绘制小于 max_y_x_value 的数据
         if len(less_than_x) > 0:
-            axs[0].scatter(less_than_x[:, 0], less_than_x[:, 1], c=color, label=f"Sensor {i + 1} (x < {max_y_x_value:.2f})")
+            axs[0].scatter(less_than_x[:, 0], less_than_x[:, 1], c=color, label=f"l_Sensor {i + 1}")
         axs[0].set_title("left_points")
         axs[0].set_xlabel("X")
         axs[0].set_ylabel("Y")
@@ -94,7 +94,7 @@ def visualize_points_on_xy_plane(points_list, colors_list, title_prefix="XY Plan
 
         # 绘制大于 max_y_x_value 的数据
         if len(greater_than_x) > 0:
-            axs[1].scatter(greater_than_x[:, 0], greater_than_x[:, 1], c=color, label=f"Sensor {i + 1} (x > {max_y_x_value:.2f})")
+            axs[1].scatter(greater_than_x[:, 0], greater_than_x[:, 1], c=color, label=f"r_Sensor {i + 1}")
         axs[1].set_title("right_points")
         axs[1].set_xlabel("X")
         axs[1].set_ylabel("Y")
@@ -130,3 +130,4 @@ visualize_point_cloud(filtered_points_at_z, colors, title="Z Filtered Points")
 # 可视化筛选 z 后的点云数据在 xy 平面上的投影，每组数据分开显示
 colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
 visualize_points_on_xy_plane(filtered_points_at_z, colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
+
