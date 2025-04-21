@@ -50,14 +50,13 @@ def extract_multiple_lines(points, num_lines=3, residual_threshold=1.0, max_tria
 
     return lines
 
+# 调整参数
+residual_threshold = 0.05  # 残差阈值
+max_trials = 1000  # 最大尝试次数
+min_samples = 10  # 最小样本数
 
 for i in Csv.Eight_Edge_list:
     point1 = i
-
-    # 调整参数
-    residual_threshold = 0.05  # 残差阈值
-    max_trials = 1000  # 最大尝试次数
-    min_samples = 10  # 最小样本数
 
     # 提取多条直线并输出方程
     lines = extract_multiple_lines(point1, num_lines=3, residual_threshold=residual_threshold, max_trials=max_trials,
