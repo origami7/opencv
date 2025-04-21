@@ -4,7 +4,6 @@ from sklearn.linear_model import RANSACRegressor
 from sklearn.linear_model import LinearRegression
 import Csv
 
-
 # 使用 RANSAC 拟合直线
 def fit_line_ransac(points, residual_threshold=1.0, max_trials=100, min_samples=10):
     if len(points) < min_samples:
@@ -50,22 +49,81 @@ def extract_multiple_lines(points, num_lines=3, residual_threshold=1.0, max_tria
 
     return lines
 
+
+def find_parallel_line_with_larger_intercept_and_intersection(lines):
+    # 初始化变量，用于存储最接近平行的两条直线及其斜率差
+    min_slope_diff = float('inf')  # 初始化为无穷大
+    parallel_lines = None
+
+    # 遍历所有直线对，比较斜率差
+    for i in range(len(lines)):
+        for j in range(i + 1, len(lines)):
+            slope_diff = abs(lines[i][0] - lines[j][0])
+            if slope_diff < min_slope_diff:
+                min_slope_diff = slope_diff
+                parallel_lines = (lines[i], lines[j])
+
+    # 找出截距较大的直线
+    if parallel_lines:
+        line1, line2 = parallel_lines
+        if line1[1] > line2[1]:
+            result_line = line1
+        else:
+            result_line = line2
+    else:
+        raise ValueError("没有找到接近平行的直线")
+
+    # 找出剩下那条直线
+    remaining_lines = [line for line in lines if line != line1 and line != line2]
+    if not remaining_lines:
+        raise ValueError("没有找到第三条直线")
+    remaining_line = remaining_lines[0]
+
+    # 计算交点
+    def find_intersection(line1, line3):
+        m1, b1 = line1[0], line1[1]
+        m3, b3 = line3[0], line3[1]
+        x = (b3 - b1) / (m1 - m3)
+        y = m1 * x + b1
+        return (x, y)
+
+    intersection_point = find_intersection(result_line, remaining_line)
+
+    return result_line, intersection_point
+
+
 # 调整参数
 residual_threshold = 0.05  # 残差阈值
 max_trials = 1000  # 最大尝试次数
 min_samples = 10  # 最小样本数
-
-for i in Csv.Eight_Edge_list:
-    point1 = i
-
+character_points = {}
+for i, point1 in enumerate(Csv.Eight_Edge_list):
     # 提取多条直线并输出方程
     lines = extract_multiple_lines(point1, num_lines=3, residual_threshold=residual_threshold, max_trials=max_trials,
                                    min_samples=min_samples)
 
     # 输出直线方程
-    for i, (slope, intercept, inlier_points) in enumerate(lines):
-        print(f"Line {i + 1}: y = {slope:.2f}x + {intercept:.2f}")
+    for j, (slope, intercept, inlier_points) in enumerate(lines):
+        print(f"Line {j + 1}: y = {slope:.2f}x + {intercept:.2f}")
 
+    result_line, intersection_point = find_parallel_line_with_larger_intercept_and_intersection(lines)
+    print(f"最接近平行的两条直线中截距较大的直线是：")
+    print(f"斜率：{result_line[0]:.2f}, 截距：{result_line[1]:.2f}")
+    print(f"该直线与剩下那条直线的交点坐标为：({intersection_point[0]:.2f}, {intersection_point[1]:.2f})")
+
+    # 计算新点的坐标
+    slope, intercept = result_line[0], result_line[1]
+    if i % 2 == 0:  # i 为偶数
+        distance = 2
+    else:  # i 为奇数
+        distance = -2
+
+    # 计算新点的坐标
+    x_new = intersection_point[0] + distance / np.sqrt(1 + slope**2)
+    y_new = slope * x_new + intercept
+
+    character_points[i+1] = [(intersection_point[0],intersection_point[1]),(x_new,y_new)]
+    print(character_points)
     # 可视化结果
     plt.figure(figsize=(8, 6))
     for slope, intercept, inlier_points in lines:
@@ -74,8 +132,15 @@ for i in Csv.Eight_Edge_list:
         plt.plot(line_x, line_y, color='red', linewidth=2)
         plt.scatter(inlier_points[:, 0], inlier_points[:, 1], color='blue')
 
+    # 绘制交点
+    plt.scatter(intersection_point[0], intersection_point[1], color='green', marker='o', s=100, label='Intersection Point')
+
+    # 绘制新点
+    plt.scatter(x_new, y_new, color='green', marker='o', s=100, label='New Point')
+
     plt.xlabel('X')
     plt.ylabel('Y')
-    plt.title('RANSAC Line Fitting')
+    plt.title(f'RANSAC Line Fitting with Intersection and New Point (Iteration {i + 1})')
+    plt.legend()
     plt.grid(True)
     plt.show()
