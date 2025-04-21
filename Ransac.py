@@ -51,36 +51,32 @@ def extract_multiple_lines(points, num_lines=3, residual_threshold=1.0, max_tria
     return lines
 
 
-# 获取数据
-points_1 = Csv.filtered_points_at_z_1_2d
-x, y = points_1[:, 0], points_1[:, 1]
-max_y_index = np.argmax(y)
-max_y_x_value = x[max_y_index]
-point1 = points_1[points_1[:, 0] > max_y_x_value]
+for i in Csv.Eight_Edge_list:
+    point1 = i
 
-# 调整参数
-residual_threshold = 0.05  # 残差阈值
-max_trials = 1000  # 最大尝试次数
-min_samples = 10  # 最小样本数
+    # 调整参数
+    residual_threshold = 0.05  # 残差阈值
+    max_trials = 1000  # 最大尝试次数
+    min_samples = 10  # 最小样本数
 
-# 提取多条直线并输出方程
-lines = extract_multiple_lines(point1, num_lines=3, residual_threshold=residual_threshold, max_trials=max_trials,
-                               min_samples=min_samples)
+    # 提取多条直线并输出方程
+    lines = extract_multiple_lines(point1, num_lines=3, residual_threshold=residual_threshold, max_trials=max_trials,
+                                   min_samples=min_samples)
 
-# 输出直线方程
-for i, (slope, intercept, inlier_points) in enumerate(lines):
-    print(f"Line {i + 1}: y = {slope:.2f}x + {intercept:.2f}")
+    # 输出直线方程
+    for i, (slope, intercept, inlier_points) in enumerate(lines):
+        print(f"Line {i + 1}: y = {slope:.2f}x + {intercept:.2f}")
 
-# 可视化结果
-plt.figure(figsize=(8, 6))
-for slope, intercept, inlier_points in lines:
-    line_x = np.array([inlier_points[:, 0].min(), inlier_points[:, 0].max()])
-    line_y = slope * line_x + intercept
-    plt.plot(line_x, line_y, color='red', linewidth=2)
-    plt.scatter(inlier_points[:, 0], inlier_points[:, 1], color='blue')
+    # 可视化结果
+    plt.figure(figsize=(8, 6))
+    for slope, intercept, inlier_points in lines:
+        line_x = np.array([inlier_points[:, 0].min(), inlier_points[:, 0].max()])
+        line_y = slope * line_x + intercept
+        plt.plot(line_x, line_y, color='red', linewidth=2)
+        plt.scatter(inlier_points[:, 0], inlier_points[:, 1], color='blue')
 
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('RANSAC Line Fitting')
-plt.grid(True)
-plt.show()
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('RANSAC Line Fitting')
+    plt.grid(True)
+    plt.show()

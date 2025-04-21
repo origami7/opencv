@@ -123,7 +123,7 @@ colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]]  # 红、绿、蓝、黄
 
 # 筛选接近目标 z 高度的点云数据
 z_target = 3  # 根据需要调整z高度
-tolerance = 0.03  # 容差范围，用于筛选接近 z_target 的点
+tolerance = 0.02  # 容差范围，用于筛选接近 z_target 的点
 filtered_points_at_z_1 = filter_points_by_z(filtered_points_1, z_target, tolerance)
 filtered_points_at_z_2 = filter_points_by_z(filtered_points_2, z_target, tolerance)
 filtered_points_at_z_3 = filter_points_by_z(filtered_points_3, z_target, tolerance)
@@ -137,3 +137,8 @@ filtered_points_at_z_3_2d = filtered_points_at_z_3[:, :2]
 filtered_points_at_z_4_2d = filtered_points_at_z_4[:, :2]
 colors_matplot = ['red', 'green', 'blue', 'yellow']  # 红、绿、蓝、黄
 #visualize_points_on_xy_plane([filtered_points_at_z_1_2d, filtered_points_at_z_2_2d, filtered_points_at_z_3_2d, filtered_points_at_z_4_2d], colors_matplot, title_prefix="Points at z = {:.2f} on XY Plane".format(z_target))
+Eight_Edge_list = []
+for i in [filtered_points_at_z_1_2d, filtered_points_at_z_2_2d, filtered_points_at_z_3_2d, filtered_points_at_z_4_2d]:
+    a,b = split_points_by_x(i)
+    Eight_Edge_list.append(a)
+    Eight_Edge_list.append(b)
